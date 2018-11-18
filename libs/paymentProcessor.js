@@ -735,9 +735,8 @@ function SetupForPool(logger, poolOptions, setupFinished){
                         }
                         var round = rounds[i];
                         // update confirmations for round
-                        if (tx && tx.result)
-                            round.confirmations = parseInt((tx.result.confirmations || 0));
-                        
+                        round.confirmations = parseInt((tx.result)? tx.result.confirmations:0);
+
                         // look for transaction errors
                         if (tx.error && tx.error.code === -5){
                             logger.warning(logSystem, logComponent, 'Daemon reports invalid transaction: ' + round.txHash);
@@ -971,11 +970,11 @@ function SetupForPool(logger, poolOptions, setupFinished){
                                             totalShares += shares;
                                         }
                                         
-                                        //console.log('--IMMATURE DEBUG--------------');
-                                        //console.log('performPayment: '+performPayment);
-                                        //console.log('blockHeight: '+round.height);
-                                        //console.log('blockReward: '+Math.round(immature));
-                                        //console.log('blockConfirmations: '+round.confirmations);
+                                        console.log('--IMMATURE DEBUG--------------');
+                                        console.log('performPayment: '+performPayment);
+                                        console.log('blockHeight: '+round.height);
+                                        console.log('blockReward: '+Math.round(immature));
+                                        console.log('blockConfirmations: '+round.confirmations);
                                         
                                         // calculate rewards for round
                                         var totalAmount = 0;
@@ -988,7 +987,7 @@ function SetupForPool(logger, poolOptions, setupFinished){
                                             totalAmount += workerImmatureTotal;
                                         }
                                         
-                                        //console.log('----------------------------');
+                                        console.log('----------------------------');
                                         break;
 
                                     /* calculate reward balances */
@@ -1030,12 +1029,12 @@ function SetupForPool(logger, poolOptions, setupFinished){
                                             worker.totalShares = parseFloat(worker.totalShares || 0) + shares;
                                             totalShares += shares;
                                         }
-                                        
-                                        //console.log('--REWARD DEBUG--------------');
-                                        //console.log('performPayment: '+performPayment);
-                                        //console.log('blockHeight: '+round.height);
-                                        //console.log('blockReward: ' + Math.round(reward));
-                                        //console.log('blockConfirmations: '+round.confirmations);
+
+                                        console.log('--REWARD DEBUG--------------');
+                                        console.log('performPayment: '+performPayment);
+                                        console.log('blockHeight: '+round.height);
+                                        console.log('blockReward: ' + Math.round(reward));
+                                        console.log('blockConfirmations: '+round.confirmations);
                                         
                                         // calculate rewards for round
                                         var totalAmount = 0;
@@ -1053,7 +1052,7 @@ function SetupForPool(logger, poolOptions, setupFinished){
                                             totalAmount += workerRewardTotal;
                                         }
 
-                                        //console.log('----------------------------');
+                                        console.log('----------------------------');
                                         break;
                                 }
                             });
@@ -1167,7 +1166,7 @@ function SetupForPool(logger, poolOptions, setupFinished){
                     
                     // perform the sendmany operation .. addressAccount
                     var rpccallTracking = 'sendmany "" '+JSON.stringify(addressAmounts);
-                    //console.log(rpccallTracking);
+                    console.log(rpccallTracking);
 
                     daemon.cmd('sendmany', ["", addressAmounts], function (result) {
                         // check for failed payments, there are many reasons
@@ -1416,9 +1415,20 @@ function SetupForPool(logger, poolOptions, setupFinished){
             logger.warning(logSystem, logComponent, 'Invalid address '+address+', convert to address '+(poolOptions.invalidAddress || poolOptions.address));
             return (poolOptions.invalidAddress || poolOptions.address);
         }
-        if (address.length <= 30) {
+        /*if (address.length <= 30) {
             logger.warning(logSystem, logComponent, 'Invalid address '+address+', convert to address '+(poolOptions.invalidAddress || poolOptions.address));
             return (poolOptions.invalidAddress || poolOptions.address);
+        }*/
+
+        if (address.length < 25 || address.length > 34) {
+            return (poolOptions.invalidAddress || (poolOptions.testnet === true ? "" : ""));
+        }
+        if (poolOptions.testnet === true && address[0] !== 'm' && address[0] !== 'n' && address[0] !== '2') {
+            return (poolOptions.invalidAddress || "");
+        }
+
+        if (poolOptions.testnet === false && address[0] !== 's' && address[0] !== 'A') {
+            return (poolOptions.invalidAddress || "");
         }
         return address;
     };
