@@ -1,0 +1,6 @@
+{
+	"name": "litefork_testnet",
+	"symbol": "LFT",
+	"algorithm": "equihash",
+	"txfee": 0.00005
+}
